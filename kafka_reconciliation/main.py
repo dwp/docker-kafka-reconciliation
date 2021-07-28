@@ -1,11 +1,14 @@
 import argparse
-import os
 import json
+import os
 
-from kafka_reconciliation.utility import results, athena, console_printer
+from kafka_reconciliation.utility import results, athena, console_printer, s3
 
 query_types = ["additional", "main", "specific"]
 manifest_queries_local = "/queries"
+S3_TIMEOUT = 5
+TEST_RUN_NAME = ""
+TEMP_FOLDER = ""
 
 
 def main():
@@ -13,11 +16,7 @@ def main():
     for query_type in query_types:
         queries = generate_comparison_queries(args, query_type)
         successful_queries, failed_queries = run_queries(queries, query_type, args)
-    # replace sql templates with args
-    # submit sql files to athena and wait
-    # generate reports (text and json)
-    # upload reports to s3(docker env vars for location)
-    pass
+        upload_query_results(successful_queries, failed_queries, args)
 
 
 def command_line_args():
@@ -45,10 +44,11 @@ def command_line_args():
     parser.add_argument('-dl', '--distinct_default_database_list_full', default="", type=str,
                         help='')
 
-    parser.add_argument('-s', '--s3_output_location', type=str,
+    parser.add_argument('-s', '--manifest_s3_output_location_queries', type=str,
                         help='')
 
-
+    parser.add_argument('-s', '--manifest_s3_bucket', type=str,
+                        help='')
 
     return parser.parse_args()
 
@@ -90,7 +90,7 @@ def generate_comparison_queries(args, query_type):
             )
             query = query.replace(
                 "[count_of_ids]", str(args.manifest_report_count_of_ids)
-            )#TODO what are these ids and timestamps
+            )  # TODO what are these ids and timestamps
             query = query.replace(
                 "[specific_id]", "521ee02f-6d75-42da-b02a-560b0bb7cbbc"
             )
@@ -115,7 +115,7 @@ def run_queries(manifest_queries, query_type, args):
         for manifest_query in manifest_queries:
             if int(manifest_query[0]["order"]) == query_number:
                 if manifest_query[0]["enabled"] and (
-                    manifest_query[0]["query_type"] == query_type
+                        manifest_query[0]["query_type"] == query_type
                 ):
                     console_printer.print_info(
                         f"Running query with name of '{manifest_query[0]['query_name']}' "
@@ -149,61 +149,61 @@ def run_queries(manifest_queries, query_type, args):
 def upload_query_results(successful_queries, failed_queries, args):
     console_printer.print_info("Generating test result")
     results_string = results.generate_formatted_results(
-        context.manifest_query_results
+        successful_queries
     )
     console_printer.print_info(f"\n\n\n\n\n{results_string}\n\n\n\n\n")
 
-    results_file_name = f"{context.test_run_name}_results.txt"
-    results_file = os.path.join(context.temp_folder, results_file_name)
+    results_file_name = f"{TEST_RUN_NAME}_results.txt"
+    results_file = os.path.join(TEMP_FOLDER, results_file_name)
     with open(results_file, "wt") as open_results_file:
         open_results_file.write(console_printer.strip_formatting(results_string))
 
     s3_uploaded_location_txt = os.path.join(
-        context.manifest_s3_output_prefix_results, results_file_name
+        args.manifest_s3_output_prefix_results, results_file_name
     )
-    aws_helper.upload_file_to_s3_and_wait_for_consistency(
+    s3.upload_file_to_s3_and_wait_for_consistency(
         results_file,
-        context.manifest_s3_bucket,
-        context.timeout,
+        args.manifest_s3_bucket,
+        S3_TIMEOUT,
         s3_uploaded_location_txt,
     )
 
     console_printer.print_bold_text(
-        f"Uploaded text results file to S3 bucket with name of '{context.manifest_s3_bucket}' at location '{s3_uploaded_location_txt}'"
+        f"Uploaded text results file to S3 bucket with name of '{args.manifest_s3_bucket}' at location '{s3_uploaded_location_txt}'"
     )
 
     os.remove(results_file)
 
     console_printer.print_info("Generating json result")
     results_json = results.generate_json_formatted_results(
-        context.manifest_query_results, context.test_run_name
+        successful_queries, TEST_RUN_NAME
     )
 
-    json_file_name = f"{context.test_run_name}_results.json"
-    json_file = os.path.join(context.temp_folder, json_file_name)
+    json_file_name = f"{TEST_RUN_NAME}_results.json"
+    json_file = os.path.join(TEMP_FOLDER, json_file_name)
     with open(json_file, "w") as open_json_file:
         json.dump(results_json, open_json_file, indent=4)
 
     s3_uploaded_location_json = os.path.join(
-        context.manifest_s3_output_prefix_results, json_file_name
+        args.manifest_s3_output_prefix_results, json_file_name
     )
-    aws_helper.upload_file_to_s3_and_wait_for_consistency(
+    s3.upload_file_to_s3_and_wait_for_consistency(
         json_file,
-        context.manifest_s3_bucket,
-        context.timeout,
+        args.manifest_s3_bucket,
+        S3_TIMEOUT,
         s3_uploaded_location_json,
     )
 
     console_printer.print_bold_text(
-        f"Uploaded json results file to S3 bucket with name of '{context.manifest_s3_bucket}' at location '{s3_uploaded_location_json}'"
+        f"Uploaded json results file to S3 bucket with name of '{args.manifest_s3_bucket}' at location '{s3_uploaded_location_json}'"
     )
 
     os.remove(json_file)
 
-    if len(context.failed_queries) > 0:
+    if len(failed_queries) > 0:
         raise AssertionError(
             "The following queries failed to execute: "
-            + ", ".join(context.failed_queries)
+            + ", ".join(failed_queries)
         )
     else:
         console_printer.print_info(f"All queries executed successfully")
