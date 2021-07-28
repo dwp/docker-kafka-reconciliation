@@ -1,0 +1,11 @@
+venv/
+.idea/
+*.pyc
+build/
+dist/
+*.gz
+**/.idea/
+.DS_Store
+.vscode
+**/__pycache__/
+**/.venv/**
