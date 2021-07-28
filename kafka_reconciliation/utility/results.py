@@ -1,4 +1,5 @@
 from kafka_reconciliation.utility import console_printer
+import datetime
 
 
 def generate_formatted_results(results_array):

@@ -1,6 +1,8 @@
 import boto3
 from botocore.config import Config
+
 from kafka_reconciliation.utility import console_printer
+
 
 def get_client(service_name, profile=None, region=None, read_timeout_seconds=120):
     """Creates a standardised boto3 client for the given service.
