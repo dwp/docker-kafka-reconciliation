@@ -5,7 +5,7 @@ import os
 from kafka_reconciliation.utility import results, athena, console_printer, s3
 
 query_types = ["additional", "main", "specific"]
-manifest_queries_local = "/queries"
+MANIFEST_QUERIES_LOCAL = "/queries"
 S3_TIMEOUT = 5
 TEST_RUN_NAME = ""
 TEMP_FOLDER = ""
@@ -57,18 +57,18 @@ def command_line_args():
 def generate_comparison_queries(args, query_type):
     manifest_queries = []
     for query_file in os.listdir(
-            os.path.join(manifest_queries_local, query_type)
+            os.path.join(MANIFEST_QUERIES_LOCAL, query_type)
     ):
         if os.path.splitext(query_file)[1] == ".json":
             with open(
-                    os.path.join(manifest_queries_local, query_type, query_file),
+                    os.path.join(MANIFEST_QUERIES_LOCAL, query_type, query_file),
                     "r",
             ) as metadata_file:
                 metadata = json.loads(metadata_file.read())
 
             with open(
                     os.path.join(
-                        manifest_queries_local, query_type, metadata["query_file"]
+                        MANIFEST_QUERIES_LOCAL, query_type, metadata["query_file"]
                     ),
                     "r",
             ) as query_sql_file:

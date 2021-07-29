@@ -1,5 +1,6 @@
 from kafka_reconciliation.utility import console_printer
 from kafka_reconciliation.utility.aws import get_client
+import time
 
 
 def execute_athena_query(output_location, query):
