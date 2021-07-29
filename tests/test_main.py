@@ -2,6 +2,7 @@ import os
 import unittest
 from argparse import Namespace
 from pathlib import Path
+from unittest import mock
 
 from moto import mock_athena
 
@@ -18,10 +19,16 @@ class TestRelauncher(unittest.TestCase):
             self.assertIn(args.manifest_counts_table_name, query)
 
     @mock_athena
-    def test_run_queries(self):
+    @mock.patch("kafka_reconciliation.utility.athena.poll_athena_query_status")
+    @mock.patch("boto3.client")
+    def test_run_queries(self, _mock_boto_client, mock_poll_athena):
+        mock_poll_athena.side_effect = ["SUCCEEDED", "SUCCEEDED", "SUCCEEDED", "SUCCEEDED", "FAILED", "FAILED",
+                                        "FAILED", "FAILED"]
         args = self.get_testing_args()
         main_queries = main.generate_comparison_queries(args, "main")
-        result = main.run_queries()
+        manifest_query_results, failed_queries = main.run_queries(main_queries, "main", args)
+        self.assertEqual(len(manifest_query_results), 4)
+        self.assertEqual(len(failed_queries), 4)
 
     def test_default_command_line_args(self):
         default_args = main.command_line_args()
