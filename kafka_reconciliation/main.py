@@ -38,16 +38,17 @@ def command_line_args():
     parser.add_argument('-r', '--manifest_report_count_of_ids', default="manifest_report_count", type=str,
                         help='')
 
-    parser.add_argument('-dc', '--distinct_default_database_collection_list_full', default="", type=str,
+    parser.add_argument('-dc', '--distinct_default_database_collection_list_full', default="default_collection_list",
+                        type=str,
                         help='')
 
-    parser.add_argument('-dl', '--distinct_default_database_list_full', default="", type=str,
+    parser.add_argument('-dl', '--distinct_default_database_list_full', default="default_database_list", type=str,
                         help='')
 
-    parser.add_argument('-s', '--manifest_s3_output_location_queries', type=str,
+    parser.add_argument('-o', '--manifest_s3_output_location_queries', type=str, default="s3_output_location",
                         help='')
 
-    parser.add_argument('-s', '--manifest_s3_bucket', type=str,
+    parser.add_argument('-b', '--manifest_s3_bucket', type=str, default="manifest_bucket",
                         help='')
 
     return parser.parse_args()
