@@ -22,3 +22,5 @@ setup-local:
 
 unittest:
 	tox tests/*.py
+
+tests: unit-tests
