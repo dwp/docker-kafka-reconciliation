@@ -73,7 +73,8 @@ class TestReconciliationQueries(unittest.TestCase):
             manifest_report_count_of_ids='manifest_report_count',
             manifest_s3_bucket='manifest_bucket',
             manifest_s3_output_location_queries='s3_output_query_location',
-            manifest_s3_output_prefix_results='s3_output_location'
+            manifest_s3_output_prefix_results='s3_output_location',
+            test_run_name=''
         )
         self.assertEqual(default_args, expected_args)
 

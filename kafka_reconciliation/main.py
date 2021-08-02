@@ -9,7 +9,7 @@ query_types = ["additional", "main", "specific"]
 MANIFEST_QUERIES_LOCAL = "/queries"
 S3_TIMEOUT = 5
 TEST_RUN_NAME = ""
-TEMP_FOLDER = ""
+TEMP_FOLDER = "/results"
 
 
 def main():
@@ -76,7 +76,14 @@ def command_line_args():
     parser.add_argument('-b', '--manifest_s3_bucket', type=str, default="manifest_bucket",
                         help='')
 
-    return parser.parse_args()
+    args = parser.parse_args()
+
+    if "AWS_BATCH_JQ_NAME" in os.environ and "AWS_BATCH_JOB_ATTEMPT" in os.environ:
+        args.test_run_name = f"{os.environ['AWS_BATCH_JQ_NAME']}_{os.environ['AWS_BATCH_JOB_ATTEMPT']}"
+    else:
+        args.test_run_name = TEST_RUN_NAME
+
+    return args
 
 
 def generate_comparison_queries(args, query_type):
