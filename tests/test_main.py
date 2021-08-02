@@ -33,7 +33,7 @@ class TestReconciliationQueries(unittest.TestCase):
     @patch("kafka_reconciliation.main.upload_file_to_s3_and_wait_for_consistency")
     def test_upload_query_results(self, mock_upload):
         path = Path(os.getcwd())
-        results_path = f"{path.parent.absolute()}/tests"
+        results_path = f"{path.parent.absolute()}/docker-kafka-reconciliation/tests"
         main.TEMP_FOLDER = results_path
         main.TEST_RUN_NAME = "upload_tests"
         main.S3_TIMEOUT = 5
@@ -79,7 +79,7 @@ class TestReconciliationQueries(unittest.TestCase):
 
     def setUp(self):
         path = Path(os.getcwd())
-        query_path = f"{path.parent.absolute()}/queries"
+        query_path = f"{path.parent.absolute()}/docker-kafka-reconciliation/queries"
         main.MANIFEST_QUERIES_LOCAL = query_path
 
     @staticmethod
