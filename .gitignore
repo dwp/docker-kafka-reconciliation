@@ -9,3 +9,5 @@ dist/
 .vscode
 **/__pycache__/
 **/.venv/**
+**/docker_kafka_reconciliation.egg-info/**
+
