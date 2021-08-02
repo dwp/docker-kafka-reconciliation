@@ -3,7 +3,7 @@ import unittest
 from argparse import Namespace
 from pathlib import Path
 
-import main
+from kafka_reconciliation import main
 
 
 class TestReconciliationQueries(unittest.TestCase):
