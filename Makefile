@@ -21,6 +21,6 @@ setup-local:
 	pip3 install -r requirements.txt
 
 unit-tests:
-	tox tests/test_main.py
+	tox tests/test_*.py
 
 tests: unit-tests
