@@ -2,6 +2,9 @@ import os
 import unittest
 from argparse import Namespace
 from pathlib import Path
+from unittest.mock import patch, call
+
+from moto import mock_athena
 
 from kafka_reconciliation import main
 
@@ -16,8 +19,8 @@ class TestReconciliationQueries(unittest.TestCase):
             self.assertIn(args.manifest_counts_table_name, query)
 
     @mock_athena
-    @mock.patch("utility.athena.poll_athena_query_status")
-    @mock.patch("boto3.client")
+    @patch("utility.athena.poll_athena_query_status")
+    @patch("boto3.client")
     def test_run_queries(self, _mock_boto_client, mock_poll_athena):
         mock_poll_athena.side_effect = ["SUCCEEDED", "SUCCEEDED", "SUCCEEDED", "SUCCEEDED", "FAILED", "FAILED",
                                         "FAILED", "FAILED"]
@@ -27,7 +30,7 @@ class TestReconciliationQueries(unittest.TestCase):
         self.assertEqual(len(manifest_query_results), 4)
         self.assertEqual(len(failed_queries), 4)
 
-    @mock.patch("kafka_reconciliation.main.upload_file_to_s3_and_wait_for_consistency")
+    @patch("kafka_reconciliation.main.upload_file_to_s3_and_wait_for_consistency")
     def test_upload_query_results(self, mock_upload):
         path = Path(os.getcwd())
         results_path = f"{path.parent.absolute()}/tests"
