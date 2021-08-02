@@ -1,5 +1,5 @@
-from kafka_reconciliation.utility import console_printer
-from kafka_reconciliation.utility.aws import get_client
+from utility import console_printer
+from utility.aws import get_client
 import time
 
 

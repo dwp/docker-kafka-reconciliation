@@ -1,4 +1,4 @@
-from kafka_reconciliation.utility.aws import get_client
+from utility.aws import get_client
 
 
 def upload_file_to_s3_and_wait_for_consistency(

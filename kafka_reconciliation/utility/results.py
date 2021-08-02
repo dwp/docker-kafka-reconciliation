@@ -1,6 +1,6 @@
 import datetime
 
-from kafka_reconciliation.utility import console_printer
+from utility import console_printer
 
 
 def generate_formatted_results(results_array, test_run_name):
