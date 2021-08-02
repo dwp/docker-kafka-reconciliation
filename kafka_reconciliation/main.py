@@ -15,23 +15,30 @@ TEMP_FOLDER = ""
 def main():
     args = command_line_args()
     failed_queries = []
-    for query_type in query_types:
-        queries = generate_comparison_queries(args, query_type)
-        successful_queries, failures = run_queries(queries, query_type, args)
-        failed_queries += failures
-        results_string, results_json = results.generate_formatted_results(
-            successful_queries, TEST_RUN_NAME
-        )
+    try:
+        for query_type in query_types:
+            queries = generate_comparison_queries(args, query_type)
+            successful_queries, failures = run_queries(queries, query_type, args)
+            failed_queries += failures
+            results_string, results_json = results.generate_formatted_results(
+                successful_queries, TEST_RUN_NAME
+            )
 
-        upload_query_results(results_string, results_json, args)
+            upload_query_results(results_string, results_json, args)
 
-    if len(failed_queries) > 0:
-        raise AssertionError(
-            "The following queries failed to execute: "
-            + ", ".join(failed_queries)
-        )
-    else:
-        console_printer.print_info(f"All queries executed successfully")
+        if len(failed_queries) > 0:
+            console_printer.print_error_text(
+                "The following queries failed to execute: "
+                + ", ".join(failed_queries)
+            )
+            exit(1)
+
+        else:
+            console_printer.print_info(f"All queries executed successfully")
+            exit(0)
+    except Exception as ex:
+        console_printer.print_error_text(f"Exception in main {ex}")
+        exit(1)
 
 
 def command_line_args():
