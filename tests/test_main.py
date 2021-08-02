@@ -10,7 +10,7 @@ from moto import mock_athena
 from kafka_reconciliation import main
 
 
-class TestRelauncher(unittest.TestCase):
+class TestReconciliationQueries(unittest.TestCase):
 
     def test_main_comparison_query_generation(self):
         args = self.get_testing_args()
@@ -20,7 +20,7 @@ class TestRelauncher(unittest.TestCase):
             self.assertIn(args.manifest_counts_table_name, query)
 
     @mock_athena
-    @mock.patch("kafka_reconciliation.utility.athena.poll_athena_query_status")
+    @mock.patch("utility.athena.poll_athena_query_status")
     @mock.patch("boto3.client")
     def test_run_queries(self, _mock_boto_client, mock_poll_athena):
         mock_poll_athena.side_effect = ["SUCCEEDED", "SUCCEEDED", "SUCCEEDED", "SUCCEEDED", "FAILED", "FAILED",
