@@ -20,7 +20,7 @@ setup-local:
 	source venv/bin/activate
 	pip3 install -r requirements.txt
 
-unittest:
+unit-tests:
 	tox tests/*.py
 
 tests: unit-tests

@@ -9,7 +9,7 @@ on:
       - '*.md'
 
 env:
-  IMAGE_NAME: dwpdigital/dataworks-kafka-reconciliation
+  IMAGE_NAME: dwpdigital/kafka-reconciliation
 
 jobs:
   get-publish-version:
