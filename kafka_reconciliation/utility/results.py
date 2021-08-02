@@ -3,7 +3,13 @@ import datetime
 from kafka_reconciliation.utility import console_printer
 
 
-def generate_formatted_results(results_array):
+def generate_formatted_results(results_array, test_run_name):
+    results_string = generate_formatted_string_results(results_array)
+    results_json = generate_json_formatted_results(results_array, test_run_name)
+    return results_string, results_json
+
+
+def generate_formatted_string_results(results_array):
     """Generates the results text for the given set of results.
 
     Keyword arguments:

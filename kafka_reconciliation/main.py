@@ -2,7 +2,8 @@ import argparse
 import json
 import os
 
-from kafka_reconciliation.utility import results, athena, console_printer, s3
+from kafka_reconciliation.utility import results, athena, console_printer
+from kafka_reconciliation.utility.s3 import upload_file_to_s3_and_wait_for_consistency
 
 query_types = ["additional", "main", "specific"]
 MANIFEST_QUERIES_LOCAL = "/queries"
@@ -13,10 +14,24 @@ TEMP_FOLDER = ""
 
 def main():
     args = command_line_args()
+    failed_queries = []
     for query_type in query_types:
         queries = generate_comparison_queries(args, query_type)
-        successful_queries, failed_queries = run_queries(queries, query_type, args)
-        upload_query_results(successful_queries, failed_queries, args)
+        successful_queries, failures = run_queries(queries, query_type, args)
+        failed_queries += failures
+        results_string, results_json = results.generate_formatted_results(
+            successful_queries, TEST_RUN_NAME
+        )
+
+        upload_query_results(results_string, results_json, args)
+
+    if len(failed_queries) > 0:
+        raise AssertionError(
+            "The following queries failed to execute: "
+            + ", ".join(failed_queries)
+        )
+    else:
+        console_printer.print_info(f"All queries executed successfully")
 
 
 def command_line_args():
@@ -45,7 +60,10 @@ def command_line_args():
     parser.add_argument('-dl', '--distinct_default_database_list_full', default="default_database_list", type=str,
                         help='')
 
-    parser.add_argument('-o', '--manifest_s3_output_location_queries', type=str, default="s3_output_location",
+    parser.add_argument('-qo', '--manifest_s3_output_location_queries', type=str, default="s3_output_query_location",
+                        help='')
+
+    parser.add_argument('-o', '--manifest_s3_output_prefix_results', type=str, default="s3_output_location",
                         help='')
 
     parser.add_argument('-b', '--manifest_s3_bucket', type=str, default="manifest_bucket",
@@ -147,11 +165,8 @@ def run_queries(manifest_queries, query_type, args):
     return manifest_query_results, failed_queries
 
 
-def upload_query_results(successful_queries, failed_queries, args):
+def upload_query_results(results_string, results_json, args):
     console_printer.print_info("Generating test result")
-    results_string = results.generate_formatted_results(
-        successful_queries
-    )
     console_printer.print_info(f"\n\n\n\n\n{results_string}\n\n\n\n\n")
 
     results_file_name = f"{TEST_RUN_NAME}_results.txt"
@@ -162,7 +177,7 @@ def upload_query_results(successful_queries, failed_queries, args):
     s3_uploaded_location_txt = os.path.join(
         args.manifest_s3_output_prefix_results, results_file_name
     )
-    s3.upload_file_to_s3_and_wait_for_consistency(
+    upload_file_to_s3_and_wait_for_consistency(
         results_file,
         args.manifest_s3_bucket,
         S3_TIMEOUT,
@@ -176,9 +191,6 @@ def upload_query_results(successful_queries, failed_queries, args):
     os.remove(results_file)
 
     console_printer.print_info("Generating json result")
-    results_json = results.generate_json_formatted_results(
-        successful_queries, TEST_RUN_NAME
-    )
 
     json_file_name = f"{TEST_RUN_NAME}_results.json"
     json_file = os.path.join(TEMP_FOLDER, json_file_name)
@@ -188,7 +200,7 @@ def upload_query_results(successful_queries, failed_queries, args):
     s3_uploaded_location_json = os.path.join(
         args.manifest_s3_output_prefix_results, json_file_name
     )
-    s3.upload_file_to_s3_and_wait_for_consistency(
+    upload_file_to_s3_and_wait_for_consistency(
         json_file,
         args.manifest_s3_bucket,
         S3_TIMEOUT,
@@ -200,13 +212,5 @@ def upload_query_results(successful_queries, failed_queries, args):
     )
 
     os.remove(json_file)
-
-    if len(failed_queries) > 0:
-        raise AssertionError(
-            "The following queries failed to execute: "
-            + ", ".join(failed_queries)
-        )
-    else:
-        console_printer.print_info(f"All queries executed successfully")
 
     console_printer.print_info(f"Query execution step completed")
