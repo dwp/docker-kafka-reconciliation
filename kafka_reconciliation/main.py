@@ -2,8 +2,8 @@ import argparse
 import json
 import os
 
-from kafka_reconciliation.utility import results, athena, console_printer
-from kafka_reconciliation.utility.s3 import upload_file_to_s3_and_wait_for_consistency
+from utility import results, athena, console_printer
+from utility.s3 import upload_file_to_s3_and_wait_for_consistency
 
 query_types = ["additional", "main", "specific"]
 MANIFEST_QUERIES_LOCAL = "/queries"
