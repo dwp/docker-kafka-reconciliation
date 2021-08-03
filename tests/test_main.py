@@ -49,34 +49,17 @@ class TestReconciliationQueries(unittest.TestCase):
                 f'{results_path}/upload_tests_results.txt',
                 'test_manifest_bucket',
                 5,
-                'test_s3_query_location/upload_tests_results.txt'
+                'test/output/results/upload_tests_results.txt'
             ),
             call(
                 f'{results_path}/upload_tests_results.json',
                 'test_manifest_bucket',
                 5,
-                'test_s3_query_location/upload_tests_results.json'
+                'test/output/results/upload_tests_results.json'
             )
         ]
 
         mock_upload.assert_has_calls(calls)
-
-    def test_default_command_line_args(self):
-        default_args = main.command_line_args()
-        print(default_args)
-        expected_args = Namespace(
-            manifest_counts_table_name='manifest_counts',
-            manifest_mismatched_timestamps_table_name='manifest_mismatched_timestamps',
-            manifest_missing_exports_table_name='manifest_missing_exports',
-            manifest_missing_imports_table_name='manifest_missing_imports',
-            manifest_report_count_of_ids='manifest_report_count',
-            manifest_s3_bucket='manifest_bucket',
-            manifest_s3_output_location_queries='s3_output_query_location',
-            manifest_s3_output_prefix_results='s3_output_location',
-            test_run_name='dataworks_kafka_reconciliation'
-        )
-
-        self.assertEqual(default_args, expected_args)
 
     def setUp(self):
         path = Path(os.getcwd())
@@ -94,7 +77,6 @@ class TestReconciliationQueries(unittest.TestCase):
             manifest_missing_imports_table_name='test_missing_imports',
             manifest_report_count_of_ids='test_manifest_report_count',
             manifest_s3_bucket='test_manifest_bucket',
-            manifest_s3_output_location_queries='test_s3_output_location',
-            manifest_s3_output_prefix_results='test_s3_query_location'
+            manifest_s3_prefix='test/output'
 
         )

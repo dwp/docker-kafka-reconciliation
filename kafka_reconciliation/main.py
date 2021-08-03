@@ -58,17 +58,14 @@ def command_line_args():
                         type=str,
                         help='The Athena table name for mismatched timestamps.')
 
-    parser.add_argument('-r', '--manifest_report_count_of_ids', default="manifest_report_count", type=str,
+    parser.add_argument('-r', '--manifest_report_count_of_ids', default="10", type=str,
                         help='')
 
-    parser.add_argument('-qo', '--manifest_s3_output_location_queries', type=str, default="s3_output_query_location",
-                        help='The S3 path to output queries to')
+    parser.add_argument('-p', '--manifest_s3_prefix', default="business-data/manifest/query-output", type=str,
+                        help='Base S3 prefix to save results and queries')
 
-    parser.add_argument('-o', '--manifest_s3_output_prefix_results', type=str, default="s3_output_location",
-                        help='The S3 path to output results to')
-
-    parser.add_argument('-b', '--manifest_s3_bucket', type=str, default="manifest_bucket",
-                        help='The s3 bucket to upload queries and results to')
+    parser.add_argument('-b', '--manifest_s3_bucket', type=str, required=True,
+                        help='The s3 bucket to upload  results to')
 
     args = parser.parse_args()
 
@@ -130,6 +127,9 @@ def generate_comparison_queries(args, query_type):
 def run_queries(manifest_queries, query_type, args):
     manifest_query_results = []
     failed_queries = []
+    s3_location = "s3://" + os.path.join(
+        args.manifest_s3_bucket, args.manifest_s3_prefix, "queries"
+    )
     for query_number in range(1, len(manifest_queries) + 1):
         for manifest_query in manifest_queries:
             if int(manifest_query[0]["order"]) == query_number:
@@ -145,7 +145,7 @@ def run_queries(manifest_queries, query_type, args):
                         results_array = [
                             manifest_query[0],
                             athena.execute_athena_query(
-                                args.manifest_s3_output_location_queries,
+                                s3_location,
                                 manifest_query[1],
                             ),
                         ]
@@ -171,11 +171,15 @@ def upload_query_results(results_string, results_json, args):
 
     results_file_name = f"{TEST_RUN_NAME}_results.txt"
     results_file = os.path.join(TEMP_FOLDER, results_file_name)
+
+    s3_output_prefix = os.path.join(
+        args.manifest_s3_prefix, "results"
+    )
     with open(results_file, "wt") as open_results_file:
         open_results_file.write(console_printer.strip_formatting(results_string))
 
     s3_uploaded_location_txt = os.path.join(
-        args.manifest_s3_output_prefix_results, results_file_name
+        s3_output_prefix, results_file_name
     )
     upload_file_to_s3_and_wait_for_consistency(
         results_file,
@@ -198,7 +202,7 @@ def upload_query_results(results_string, results_json, args):
         json.dump(results_json, open_json_file, indent=4)
 
     s3_uploaded_location_json = os.path.join(
-        args.manifest_s3_output_prefix_results, json_file_name
+        s3_output_prefix, json_file_name
     )
     upload_file_to_s3_and_wait_for_consistency(
         json_file,
