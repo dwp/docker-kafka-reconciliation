@@ -28,7 +28,7 @@ Run `make setup-local` This will create a Python virtual environment and install
 
 There are tox unit tests in the module. To run them, you will need the module tox installed with pip install tox, then go to the root of the module and simply run tox to run all the unit tests.
 
-The test may also be ran via `make unittest`.
+The test may also be ran via `make unit-tests`.
 
 You should always ensure they work before making a pull request for your branch.
 
