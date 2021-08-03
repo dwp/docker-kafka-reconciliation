@@ -12,6 +12,44 @@ from kafka_reconciliation import main
 
 class TestReconciliationQueries(unittest.TestCase):
 
+    @mock_athena
+    @patch("kafka_reconciliation.main.upload_file_to_s3_and_wait_for_consistency")
+    @patch("utility.athena.poll_athena_query_status")
+    @patch("boto3.client")
+    def test_main_success(self, _mock_boto_client, mock_poll_athena, _mock_upload):
+        path = Path(os.getcwd())
+        results_path = f"{path.parent.absolute()}/docker-kafka-reconciliation/tests"
+        main.TEMP_FOLDER = results_path
+        main.TEST_RUN_NAME = "upload_tests"
+        main.S3_TIMEOUT = 5
+        main.query_types = ["main"]
+        mock_poll_athena.return_value = "SUCCEEDED"
+        args = ['-b', 'manifest_bucket']
+        old_sys_argv = sys.argv
+        sys.argv = [old_sys_argv[0]] + args
+        with self.assertRaises(SystemExit) as e:
+            main.main()
+            self.assertEqual(e, 0)
+
+    @mock_athena
+    @patch("kafka_reconciliation.main.upload_file_to_s3_and_wait_for_consistency")
+    @patch("utility.athena.poll_athena_query_status")
+    @patch("boto3.client")
+    def test_main_failed_queries(self, _mock_boto_client, mock_poll_athena, _mock_upload):
+        path = Path(os.getcwd())
+        results_path = f"{path.parent.absolute()}/docker-kafka-reconciliation/tests"
+        main.TEMP_FOLDER = results_path
+        main.TEST_RUN_NAME = "upload_tests"
+        main.S3_TIMEOUT = 5
+        main.query_types = ["main"]
+        mock_poll_athena.return_value = "FAILED"
+        args = ['-b', 'manifest_bucket']
+        old_sys_argv = sys.argv
+        sys.argv = [old_sys_argv[0]] + args
+        with self.assertRaises(SystemExit) as e:
+            main.main()
+            self.assertEqual(e, 1)
+
     def test_main_comparison_query_generation(self):
         args = self.get_testing_args()
         generated_queries = main.generate_comparison_queries(args, "main")
@@ -65,23 +103,6 @@ class TestReconciliationQueries(unittest.TestCase):
     def test_args_required_not_set(self):
         with self.assertRaises(SystemExit):
             main.command_line_args()
-
-    def test_main_sucess(self):
-        args = ['-b', 'manifest_bucket']
-        old_sys_argv = sys.argv
-        sys.argv = [old_sys_argv[0]] + args
-
-        default_args = main.command_line_args()
-        expected_args = Namespace(
-            manifest_counts_table_name='manifest_counts_parquet',
-            manifest_mismatched_timestamps_table_name='manifest_mismatched_timestamps_parquet',
-            manifest_missing_exports_table_name='manifest_missing_exports_parquet',
-            manifest_missing_imports_table_name='manifest_missing_imports_parquet',
-            manifest_report_count_of_ids='10', manifest_s3_bucket='manifest_bucket',
-            manifest_s3_prefix='business-data/manifest/query-output',
-            test_run_name='dataworks_kafka_reconciliation'
-        )
-        self.assertEqual(expected_args, default_args)
 
     def setUp(self):
         path = Path(os.getcwd())
