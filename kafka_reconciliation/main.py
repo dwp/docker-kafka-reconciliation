@@ -77,6 +77,8 @@ def command_line_args():
     else:
         args.test_run_name = TEST_RUN_NAME
 
+    console_printer.print_info(f"Parsed Command line arguments {args}")
+
     return args
 
 
