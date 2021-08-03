@@ -3,6 +3,7 @@ FROM python:3-buster
 ENV RECONCILIATION_HOME=/kafka_reconciliation
 RUN mkdir RECONCILIATION_HOME
 RUN mkdir /queries
+RUN mkdir /results
 WORKDIR RECONCILIATION_HOME
 
 COPY kafka_reconciliation/main.py ./

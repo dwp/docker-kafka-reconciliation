@@ -8,7 +8,7 @@ from utility.s3 import upload_file_to_s3_and_wait_for_consistency
 query_types = ["additional", "main", "specific"]
 MANIFEST_QUERIES_LOCAL = "/queries"
 S3_TIMEOUT = 5
-TEST_RUN_NAME = ""
+TEST_RUN_NAME = "dataworks_kafka_reconciliation"
 TEMP_FOLDER = "/results"
 
 
@@ -45,27 +45,21 @@ def command_line_args():
     parser = \
         argparse.ArgumentParser(description='Submits athena queries.')
 
-    parser.add_argument('-i', '--manifest_missing_imports_table_name', default="missing_imports", type=str,
+    parser.add_argument('-i', '--manifest_missing_imports_table_name', default="manifest_missing_imports", type=str,
                         help='The Athena table name for missing imports.')
 
-    parser.add_argument('-e', '--manifest_missing_exports_table_name', default="missing_exports", type=str,
+    parser.add_argument('-e', '--manifest_missing_exports_table_name', default="manifest_missing_exports", type=str,
                         help='The Athena table name for missing exports.')
 
     parser.add_argument('-c', '--manifest_counts_table_name', default="manifest_counts", type=str,
                         help='.')
 
-    parser.add_argument('-t', '--manifest_mismatched_timestamps_table_name', default="manifest_mismatched", type=str,
+    parser.add_argument('-t', '--manifest_mismatched_timestamps_table_name', default="manifest_mismatched_timestamps", type=str,
                         help='')
 
     parser.add_argument('-r', '--manifest_report_count_of_ids', default="manifest_report_count", type=str,
                         help='')
 
-    parser.add_argument('-dc', '--distinct_default_database_collection_list_full', default="default_collection_list",
-                        type=str,
-                        help='')
-
-    parser.add_argument('-dl', '--distinct_default_database_list_full', default="default_database_list", type=str,
-                        help='')
 
     parser.add_argument('-qo', '--manifest_s3_output_location_queries', type=str, default="s3_output_query_location",
                         help='')
