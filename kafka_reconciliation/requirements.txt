@@ -1,0 +1,5 @@
+boto3
+argparse
+moto
+tox
+setuptools~=50.3.2

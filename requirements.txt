@@ -1,0 +1,4 @@
+boto3~=1.16.25
+tox
+botocore~=1.19.25
+setuptools~=50.3.2

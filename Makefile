@@ -14,3 +14,13 @@ bootstrap: ## Bootstrap local environment for first use
 git-hooks: ## Set up hooks in .githooks
 	@git submodule update --init .githooks ; \
 	git config core.hooksPath .githooks \
+
+setup-local:
+	virtualenv --python=python3.8 venv
+	source venv/bin/activate
+	pip3 install -r requirements.txt
+
+unit-tests:
+	tox
+
+tests: unit-tests
