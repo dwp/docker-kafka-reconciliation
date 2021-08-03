@@ -117,19 +117,11 @@ def generate_comparison_queries(args, query_type):
             )
             query = query.replace(
                 "[count_of_ids]", str(args.manifest_report_count_of_ids)
-            )  # TODO what are these ids and timestamps
+            )
             query = query.replace(
                 "[specific_id]", "521ee02f-6d75-42da-b02a-560b0bb7cbbc"
             )
             query = query.replace("[specific_timestamp]", "1585055547016")
-            query = query.replace(
-                "[distinct_default_database_collection_list_full]",
-                args.distinct_default_database_collection_list_full,
-            )
-            query = query.replace(
-                "[distinct_default_database_list]",
-                args.distinct_default_database_list_full,
-            )
             manifest_queries.append([metadata, query])
 
     return manifest_queries
