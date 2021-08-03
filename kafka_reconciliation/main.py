@@ -45,16 +45,19 @@ def command_line_args():
     parser = \
         argparse.ArgumentParser(description='Submits athena queries.')
 
-    parser.add_argument('-i', '--manifest_missing_imports_table_name', default="manifest_missing_imports", type=str,
+    parser.add_argument('-i', '--manifest_missing_imports_table_name', default="manifest_missing_imports_parquet",
+                        type=str,
                         help='The Athena table name for missing imports.')
 
-    parser.add_argument('-e', '--manifest_missing_exports_table_name', default="manifest_missing_exports", type=str,
+    parser.add_argument('-e', '--manifest_missing_exports_table_name', default="manifest_missing_exports_parquet",
+                        type=str,
                         help='The Athena table name for missing exports.')
 
-    parser.add_argument('-c', '--manifest_counts_table_name', default="manifest_counts", type=str,
+    parser.add_argument('-c', '--manifest_counts_table_name', default="manifest_counts_parquet", type=str,
                         help='The Athena table name for manifest counts.')
 
-    parser.add_argument('-t', '--manifest_mismatched_timestamps_table_name', default="manifest_mismatched_timestamps",
+    parser.add_argument('-t', '--manifest_mismatched_timestamps_table_name',
+                        default="manifest_mismatched_timestamps_parquet",
                         type=str,
                         help='The Athena table name for mismatched timestamps.')
 
