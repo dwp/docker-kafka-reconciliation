@@ -52,23 +52,23 @@ def command_line_args():
                         help='The Athena table name for missing exports.')
 
     parser.add_argument('-c', '--manifest_counts_table_name', default="manifest_counts", type=str,
-                        help='.')
+                        help='The Athena table name for manifest counts.')
 
-    parser.add_argument('-t', '--manifest_mismatched_timestamps_table_name', default="manifest_mismatched_timestamps", type=str,
-                        help='')
+    parser.add_argument('-t', '--manifest_mismatched_timestamps_table_name', default="manifest_mismatched_timestamps",
+                        type=str,
+                        help='The Athena table name for mismatched timestamps.')
 
     parser.add_argument('-r', '--manifest_report_count_of_ids', default="manifest_report_count", type=str,
                         help='')
 
-
     parser.add_argument('-qo', '--manifest_s3_output_location_queries', type=str, default="s3_output_query_location",
-                        help='')
+                        help='The S3 path to output queries to')
 
     parser.add_argument('-o', '--manifest_s3_output_prefix_results', type=str, default="s3_output_location",
-                        help='')
+                        help='The S3 path to output results to')
 
     parser.add_argument('-b', '--manifest_s3_bucket', type=str, default="manifest_bucket",
-                        help='')
+                        help='The s3 bucket to upload queries and results to')
 
     args = parser.parse_args()
 
