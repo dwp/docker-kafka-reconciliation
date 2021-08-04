@@ -27,17 +27,17 @@ def main():
             upload_query_results(results_string, results_json, args)
 
         if len(failed_queries) > 0:
-            console_printer.print_error_text(
+            print(
                 "The following queries failed to execute: "
                 + ", ".join(failed_queries)
             )
             exit(1)
 
         else:
-            console_printer.print_info(f"All queries executed successfully")
+            print(f"All queries executed successfully")
             exit(0)
     except Exception as ex:
-        console_printer.print_error_text(f"Exception in main {ex}")
+        print(f"Exception in main {ex}")
         exit(1)
 
 
@@ -77,7 +77,7 @@ def command_line_args():
     else:
         args.test_run_name = TEST_RUN_NAME
 
-    console_printer.print_info(f"Parsed Command line arguments {args}")
+    print(f"Parsed Command line arguments {args}")
 
     return args
 
@@ -141,7 +141,7 @@ def run_queries(manifest_queries, query_type, args):
                 if manifest_query[0]["enabled"] and (
                         manifest_query[0]["query_type"] == query_type
                 ):
-                    console_printer.print_info(
+                    print(
                         f"Running query with name of '{manifest_query[0]['query_name']}' "
                         + f"and description of '{manifest_query[0]['query_description']}' "
                         + f"and order of '{manifest_query[0]['order']}'"
@@ -161,18 +161,18 @@ def run_queries(manifest_queries, query_type, args):
                         )
                         failed_queries.append(manifest_query[0]["query_name"])
                 else:
-                    console_printer.print_info(
+                    print(
                         f"Not running query with name of '{manifest_query[0]['query_name']}' "
                         + f"because 'enabled' value is set to '{manifest_query[0]['enabled']}'"
                     )
 
-    console_printer.print_info(f"All queries finished execution for query type {query_type}")
+    print(f"All queries finished execution for query type {query_type}")
     return manifest_query_results, failed_queries
 
 
 def upload_query_results(results_string, results_json, args):
-    console_printer.print_info("Generating test result")
-    console_printer.print_info(f"\n\n\n\n\n{results_string}\n\n\n\n\n")
+    print("Generating test result")
+    print(f"\n\n\n\n\n{results_string}\n\n\n\n\n")
 
     results_file_name = f"{TEST_RUN_NAME}_results.txt"
     results_file = os.path.join(TEMP_FOLDER, results_file_name)
@@ -193,13 +193,13 @@ def upload_query_results(results_string, results_json, args):
         s3_uploaded_location_txt,
     )
 
-    console_printer.print_bold_text(
+    print(
         f"Uploaded text results file to S3 bucket with name of '{args.manifest_s3_bucket}' at location '{s3_uploaded_location_txt}'"
     )
 
     os.remove(results_file)
 
-    console_printer.print_info("Generating json result")
+    print("Generating json result")
 
     json_file_name = f"{TEST_RUN_NAME}_results.json"
     json_file = os.path.join(TEMP_FOLDER, json_file_name)
@@ -216,13 +216,13 @@ def upload_query_results(results_string, results_json, args):
         s3_uploaded_location_json,
     )
 
-    console_printer.print_bold_text(
+    print(
         f"Uploaded json results file to S3 bucket with name of '{args.manifest_s3_bucket}' at location '{s3_uploaded_location_json}'"
     )
 
     os.remove(json_file)
 
-    console_printer.print_info(f"Query execution step completed")
+    print(f"Query execution step completed")
 
 
 if __name__ == '__main__':
