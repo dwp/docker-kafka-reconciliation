@@ -77,6 +77,8 @@ def command_line_args():
     else:
         args.test_run_name = TEST_RUN_NAME
 
+    console_printer.print_info(f"Parsed Command line arguments {args}")
+
     return args
 
 
@@ -221,3 +223,7 @@ def upload_query_results(results_string, results_json, args):
     os.remove(json_file)
 
     console_printer.print_info(f"Query execution step completed")
+
+
+if __name__ == '__main__':
+    main()
