@@ -16,6 +16,8 @@ def upload_file_to_s3_and_wait_for_consistency(
     if s3_client is None:
         s3_client = get_client(service_name="s3")
 
+    print(f"Uploading {file_location} to bucket {s3_bucket} with prefix {s3_key}")
+
     s3_client.upload_file(file_location, s3_bucket, s3_key)
 
     return wait_for_file_to_be_in_s3(s3_bucket, s3_key, seconds_timeout, s3_client)

@@ -10,7 +10,7 @@ def execute_athena_query(output_location, query):
     output_location -- the s3 location to output the results of the execution to
     query -- the query to execute
     """
-    console_printer.print_info(
+    print(
         f"Executing query and sending output results to '{output_location}'"
     )
 

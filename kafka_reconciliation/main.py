@@ -7,19 +7,21 @@ from utility.s3 import upload_file_to_s3_and_wait_for_consistency
 
 query_types = ["additional", "main", "specific"]
 MANIFEST_QUERIES_LOCAL = "/queries"
-S3_TIMEOUT = 5
+S3_TIMEOUT = 30
 TEST_RUN_NAME = "dataworks_kafka_reconciliation"
 TEMP_FOLDER = "/results"
 
 
 def main():
+    print(f"Executing kafka reconciliation")
     args = command_line_args()
     failed_queries = []
     try:
         for query_type in query_types:
+            print(f"Starting reconciliation for query type {query_type}")
             queries = generate_comparison_queries(args, query_type)
             successful_queries, failures = run_queries(queries, query_type, args)
-            failed_queries += failures
+            failed_queries.extend(failures)
             results_string, results_json = results.generate_formatted_results(
                 successful_queries, TEST_RUN_NAME
             )
@@ -125,11 +127,12 @@ def generate_comparison_queries(args, query_type):
             )
             query = query.replace("[specific_timestamp]", "1585055547016")
             manifest_queries.append([metadata, query])
-
+    print(f"Number of queries generated for query type {query_type}: {len(manifest_queries)}")
     return manifest_queries
 
 
 def run_queries(manifest_queries, query_type, args):
+    print(f"Running queries for query type {query_type}")
     manifest_query_results = []
     failed_queries = []
     s3_location = "s3://" + os.path.join(
@@ -167,6 +170,8 @@ def run_queries(manifest_queries, query_type, args):
                     )
 
     print(f"All queries finished execution for query type {query_type}")
+    print(f"Number of SUCCESS queries for  {query_type}: {len(manifest_query_results)}")
+    print(f"Number of FAILED queries for  {query_type}: {len(failed_queries)}")
     return manifest_query_results, failed_queries
 
 
