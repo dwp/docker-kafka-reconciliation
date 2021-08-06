@@ -58,8 +58,8 @@ class TestReconciliationQueries(unittest.TestCase):
     @patch("utility.athena.get_client")
     def test_run_queries(self, mock_boto_client, mock_poll_athena):
         client_mock = mock.MagicMock()
-        mock_boto_client.return_value = client_mock
         client_mock.start_query_execution.return_value = {"QueryExecutionId": "testId"}
+        mock_boto_client.return_value = client_mock
         mock_poll_athena.side_effect = ["SUCCEEDED", "SUCCEEDED", "SUCCEEDED", "SUCCEEDED", "FAILED", "FAILED",
                                         "FAILED", "FAILED"]
         args = self.get_testing_args()

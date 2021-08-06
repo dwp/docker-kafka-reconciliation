@@ -9,7 +9,7 @@ def get_client(service_name, read_timeout_seconds=120):
     service_name -- the aws service name (i.e. s3, lambda etc)
     read_timeout -- timeout for operations, defaults to 120 seconds
     """
-
+    print(f"Getting client for service {service_name}")
     max_connections = 25 if service_name.lower() == "s3" else 10
 
     client_config = Config(
@@ -18,6 +18,8 @@ def get_client(service_name, read_timeout_seconds=120):
         retries={"max_attempts": 10, "mode": "standard"},
     )
 
-    return boto3.client(
+    client = boto3.client(
         service_name, config=client_config
     )
+    print(f"Boto client {client}")
+    return client
