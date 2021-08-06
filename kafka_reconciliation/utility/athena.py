@@ -18,6 +18,7 @@ def execute_athena_query(output_location, query):
     query_start_resp = athena_client.start_query_execution(
         QueryString=query, ResultConfiguration={"OutputLocation": output_location}
     )
+    print(f"Query start response {query_start_resp}")
     execution_state = poll_athena_query_status(query_start_resp["QueryExecutionId"])
 
     if execution_state != "SUCCEEDED":
@@ -36,6 +37,7 @@ def poll_athena_query_status(id):
     Keyword arguments:
     id -- the id of the query in athena
     """
+    print(f"Polling athena query status for id {id}")
     athena_client = get_client(service_name="athena")
     time_taken = 1
     while True:
