@@ -5,7 +5,7 @@ import os
 from utility import results, athena, console_printer
 from utility.s3 import upload_file_to_s3_and_wait_for_consistency
 
-query_types = ["additional", "main", "specific"]
+query_types = ["main"]
 MANIFEST_QUERIES_LOCAL = "/queries"
 S3_TIMEOUT = 30
 TEST_RUN_NAME = "dataworks_kafka_reconciliation"
@@ -133,6 +133,7 @@ def generate_comparison_queries(args, query_type):
 
 def run_queries(manifest_queries, query_type, args):
     print(f"Running queries for query type {query_type}")
+    print(f"Manifest queries {manifest_queries}")
     manifest_query_results = []
     failed_queries = []
     s3_location = "s3://" + os.path.join(
