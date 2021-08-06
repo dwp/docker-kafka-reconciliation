@@ -74,8 +74,8 @@ def command_line_args():
 
     args = parser.parse_args()
 
-    if "AWS_BATCH_JQ_NAME" in os.environ and "AWS_BATCH_JOB_ATTEMPT" in os.environ:
-        args.test_run_name = f"{os.environ['AWS_BATCH_JQ_NAME']}_{os.environ['AWS_BATCH_JOB_ATTEMPT']}"
+    if {'AWS_BATCH_JOB_ID', 'AWS_BATCH_JOB_ATTEMPT'}.issubset(os.environ):
+        args.test_run_name = f"{os.environ['AWS_BATCH_JOB_ID']}_{os.environ['AWS_BATCH_JOB_ATTEMPT']}"
     else:
         args.test_run_name = TEST_RUN_NAME
 
