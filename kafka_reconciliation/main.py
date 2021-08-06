@@ -5,7 +5,7 @@ import os
 from utility import results, athena, console_printer
 from utility.s3 import upload_file_to_s3_and_wait_for_consistency
 
-query_types = ["main"]
+query_types = ["additional", "main", "specific"]
 MANIFEST_QUERIES_LOCAL = "/queries"
 S3_TIMEOUT = 30
 TEST_RUN_NAME = "dataworks_kafka_reconciliation"
@@ -78,6 +78,8 @@ def command_line_args():
         args.test_run_name = f"{os.environ['AWS_BATCH_JQ_NAME']}_{os.environ['AWS_BATCH_JOB_ATTEMPT']}"
     else:
         args.test_run_name = TEST_RUN_NAME
+
+    args.region = os.environ.get('AWS_DEFAULT_REGION', "eu-west-2")
 
     print(f"Parsed Command line arguments {args}")
 
@@ -152,6 +154,7 @@ def run_queries(manifest_queries, query_type, args):
                     )
                     try:
                         query_result = athena.execute_athena_query(
+                            args.region,
                             s3_location,
                             manifest_query[1],
                         )
