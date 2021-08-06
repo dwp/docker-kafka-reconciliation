@@ -18,16 +18,21 @@ def execute_athena_query(output_location, query):
     query_start_resp = athena_client.start_query_execution(
         QueryString=query, ResultConfiguration={"OutputLocation": output_location}
     )
-    execution_state = poll_athena_query_status(query_start_resp["QueryExecutionId"])
+    print(f"Query start response {query_start_resp}")
+    if 'QueryExecutionId' in query_start_resp:
+        execution_state = poll_athena_query_status(query_start_resp["QueryExecutionId"])
 
-    if execution_state != "SUCCEEDED":
-        raise KeyError(
-            f"Athena query execution failed with final execution status of '{execution_state}'"
+        if execution_state != "SUCCEEDED":
+            print(f"Non successful execution state returned: {execution_state}")
+            raise KeyError(
+                f"Athena query execution failed with final execution status of '{execution_state}'"
+            )
+
+        return athena_client.get_query_results(
+            QueryExecutionId=query_start_resp["QueryExecutionId"]
         )
-
-    return athena_client.get_query_results(
-        QueryExecutionId=query_start_resp["QueryExecutionId"]
-    )
+    else:
+        raise Exception("Athena response didn't contain QueryExecutionId")
 
 
 def poll_athena_query_status(id):
@@ -36,6 +41,7 @@ def poll_athena_query_status(id):
     Keyword arguments:
     id -- the id of the query in athena
     """
+    print(f"Polling athena query status for id {id}")
     athena_client = get_client(service_name="athena")
     time_taken = 1
     while True:
