@@ -1,6 +1,5 @@
 import time
 
-from utility import console_printer
 from utility.aws import get_client
 
 
@@ -50,7 +49,7 @@ def poll_athena_query_status(id, athena_client):
 
         state = query_execution_resp["QueryExecution"]["Status"]["State"]
         if state in ("SUCCEEDED", "FAILED", "CANCELLED"):
-            console_printer.print_info(
+            print(
                 f"Athena query execution finished in {str(time_taken)} seconds with status of '{state}'"
             )
             return state

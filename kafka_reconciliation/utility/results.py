@@ -29,7 +29,7 @@ def generate_formatted_result(results_instance):
     results_instance -- results as an array of [manifest_details_array, results_json]
     """
     manifest_details_array = results_instance[0]
-    console_printer.print_info(
+    print(
         f"Formatting results for query with name of: '{manifest_details_array['query_name']}'"
     )
     result_string = f"""{console_printer.generate_bold_text('Name')}: {manifest_details_array['query_name']}

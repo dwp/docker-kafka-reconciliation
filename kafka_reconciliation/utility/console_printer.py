@@ -27,38 +27,6 @@ def set_log_level_info():
     logging.basicConfig(level=logging.INFO)
 
 
-def print_info(text):
-    logging.info(text)
-
-
-def print_debug(text):
-    logging.debug(text)
-
-
-def print_header(text):
-    print_info(f"{header_text_format}{text}{end_text_formatting}")
-
-
-def print_bold_text(text):
-    print_info(f"{bold_text_format}{text}{end_text_formatting}")
-
-
-def print_underline_text(text):
-    print_info(f"{underline_text_format}{text}{end_text_formatting}")
-
-
-def print_warning_text(text):
-    print_info(f"{warning_text_format}{text}{end_text_formatting}")
-
-
-def print_error_text(text):
-    print_info(f"{error_text_format}{text}{end_text_formatting}")
-
-
-def print_italic_text(text):
-    print_info(f"{italic_text_format}{text}{end_text_formatting}")
-
-
 def generate_header(text):
     return f"{header_text_format}{text}{end_text_formatting}"
 
