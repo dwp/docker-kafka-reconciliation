@@ -166,7 +166,7 @@ def run_queries(manifest_queries, query_type, args):
                         ]
                         manifest_query_results.append(results_array)
                     except Exception as ex:
-                        console_printer.print_warning_text(
+                        print(
                             f"Error occurred running query named '{manifest_query[0]['query_name']}': '{ex}'"
                         )
                         failed_queries.append(manifest_query[0]["query_name"])
