@@ -4,6 +4,7 @@ import unittest
 from argparse import Namespace
 from pathlib import Path
 from unittest.mock import patch, call
+from unittest import mock
 
 from moto import mock_athena
 
@@ -59,8 +60,11 @@ class TestReconciliationQueries(unittest.TestCase):
 
     @mock_athena
     @patch("utility.athena.poll_athena_query_status")
-    @patch("boto3.client")
-    def test_run_queries(self, _mock_boto_client, mock_poll_athena):
+    @patch("utility.athena.get_client")
+    def test_run_queries(self, mock_boto_client, mock_poll_athena):
+        client_mock = mock.MagicMock()
+        mock_boto_client.return_value = client_mock
+        client_mock.start_query_execution.return_value = {"QueryExecutionId": "testId"}
         mock_poll_athena.side_effect = ["SUCCEEDED", "SUCCEEDED", "SUCCEEDED", "SUCCEEDED", "FAILED", "FAILED",
                                         "FAILED", "FAILED"]
         args = self.get_testing_args()
