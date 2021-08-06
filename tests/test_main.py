@@ -58,13 +58,14 @@ class TestReconciliationQueries(unittest.TestCase):
     @patch("utility.athena.get_client")
     def test_run_queries(self, mock_boto_client, mock_poll_athena):
         client_mock = mock.MagicMock()
-        mock_boto_client.return_value = client_mock
         client_mock.start_query_execution.return_value = {"QueryExecutionId": "testId"}
+        mock_boto_client.return_value = client_mock
         mock_poll_athena.side_effect = ["SUCCEEDED", "SUCCEEDED", "SUCCEEDED", "SUCCEEDED", "FAILED", "FAILED",
                                         "FAILED", "FAILED"]
         args = self.get_testing_args()
         main_queries = main.generate_comparison_queries(args, "main")
         manifest_query_results, failed_queries = main.run_queries(main_queries, "main", args)
+        mock_boto_client.assert_called_with(service_name="athena", region="eu-west-2")
         self.assertEqual(len(manifest_query_results), 4)
         self.assertEqual(len(failed_queries), 4)
 
@@ -118,6 +119,7 @@ class TestReconciliationQueries(unittest.TestCase):
             manifest_missing_imports_table_name='test_missing_imports',
             manifest_report_count_of_ids='test_manifest_report_count',
             manifest_s3_bucket='test_manifest_bucket',
-            manifest_s3_prefix='test/output'
+            manifest_s3_prefix='test/output',
+            region='eu-west-2'
 
         )

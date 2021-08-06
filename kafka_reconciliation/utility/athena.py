@@ -1,9 +1,9 @@
-from utility import console_printer
-from utility.aws import get_client
 import time
 
+from utility.aws import get_client
 
-def execute_athena_query(output_location, query):
+
+def execute_athena_query(region, output_location, query):
     """Executes the given individual query against athena and return the result.
 
     Keyword arguments:
@@ -14,13 +14,14 @@ def execute_athena_query(output_location, query):
         f"Executing query and sending output results to '{output_location}'"
     )
 
-    athena_client = get_client(service_name="athena")
+    athena_client = get_client(service_name="athena", region=region)
+    print("Received client starting queries")
     query_start_resp = athena_client.start_query_execution(
         QueryString=query, ResultConfiguration={"OutputLocation": output_location}
     )
     print(f"Query start response {query_start_resp}")
     if 'QueryExecutionId' in query_start_resp:
-        execution_state = poll_athena_query_status(query_start_resp["QueryExecutionId"])
+        execution_state = poll_athena_query_status(query_start_resp["QueryExecutionId"], athena_client)
 
         if execution_state != "SUCCEEDED":
             print(f"Non successful execution state returned: {execution_state}")
@@ -35,21 +36,20 @@ def execute_athena_query(output_location, query):
         raise Exception("Athena response didn't contain QueryExecutionId")
 
 
-def poll_athena_query_status(id):
+def poll_athena_query_status(id, athena_client):
     """Polls athena for the status of a query.
 
     Keyword arguments:
     id -- the id of the query in athena
     """
     print(f"Polling athena query status for id {id}")
-    athena_client = get_client(service_name="athena")
     time_taken = 1
     while True:
         query_execution_resp = athena_client.get_query_execution(QueryExecutionId=id)
 
         state = query_execution_resp["QueryExecution"]["Status"]["State"]
         if state in ("SUCCEEDED", "FAILED", "CANCELLED"):
-            console_printer.print_info(
+            print(
                 f"Athena query execution finished in {str(time_taken)} seconds with status of '{state}'"
             )
             return state

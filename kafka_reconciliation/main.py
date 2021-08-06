@@ -74,10 +74,12 @@ def command_line_args():
 
     args = parser.parse_args()
 
-    if "AWS_BATCH_JQ_NAME" in os.environ and "AWS_BATCH_JOB_ATTEMPT" in os.environ:
-        args.test_run_name = f"{os.environ['AWS_BATCH_JQ_NAME']}_{os.environ['AWS_BATCH_JOB_ATTEMPT']}"
+    if {'AWS_BATCH_JOB_ID', 'AWS_BATCH_JOB_ATTEMPT'}.issubset(os.environ):
+        args.test_run_name = f"{os.environ['AWS_BATCH_JOB_ID']}_{os.environ['AWS_BATCH_JOB_ATTEMPT']}"
     else:
         args.test_run_name = TEST_RUN_NAME
+
+    args.region = os.environ.get('AWS_DEFAULT_REGION', "eu-west-2")
 
     print(f"Parsed Command line arguments {args}")
 
@@ -133,6 +135,7 @@ def generate_comparison_queries(args, query_type):
 
 def run_queries(manifest_queries, query_type, args):
     print(f"Running queries for query type {query_type}")
+    print(f"Manifest queries {manifest_queries}")
     manifest_query_results = []
     failed_queries = []
     s3_location = "s3://" + os.path.join(
@@ -150,16 +153,20 @@ def run_queries(manifest_queries, query_type, args):
                         + f"and order of '{manifest_query[0]['order']}'"
                     )
                     try:
+                        query_result = athena.execute_athena_query(
+                            args.region,
+                            s3_location,
+                            manifest_query[1],
+                        )
+                        print(f"Query result {query_result}")
+
                         results_array = [
                             manifest_query[0],
-                            athena.execute_athena_query(
-                                s3_location,
-                                manifest_query[1],
-                            ),
+                            query_result
                         ]
                         manifest_query_results.append(results_array)
                     except Exception as ex:
-                        console_printer.print_warning_text(
+                        print(
                             f"Error occurred running query named '{manifest_query[0]['query_name']}': '{ex}'"
                         )
                         failed_queries.append(manifest_query[0]["query_name"])
