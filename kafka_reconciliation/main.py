@@ -151,12 +151,15 @@ def run_queries(manifest_queries, query_type, args):
                         + f"and order of '{manifest_query[0]['order']}'"
                     )
                     try:
+                        query_result = athena.execute_athena_query(
+                            s3_location,
+                            manifest_query[1],
+                        )
+                        print(f"Query result {query_result}")
+
                         results_array = [
                             manifest_query[0],
-                            athena.execute_athena_query(
-                                s3_location,
-                                manifest_query[1],
-                            ),
+                            query_result
                         ]
                         manifest_query_results.append(results_array)
                     except Exception as ex:
