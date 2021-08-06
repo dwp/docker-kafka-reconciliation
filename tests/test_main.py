@@ -3,17 +3,14 @@ import sys
 import unittest
 from argparse import Namespace
 from pathlib import Path
-from unittest.mock import patch, call
 from unittest import mock
-
-from moto import mock_athena
+from unittest.mock import patch, call
 
 from kafka_reconciliation import main
 
 
 class TestReconciliationQueries(unittest.TestCase):
 
-    @mock_athena
     @patch("kafka_reconciliation.main.upload_file_to_s3_and_wait_for_consistency")
     @patch("utility.athena.poll_athena_query_status")
     @patch("boto3.client")
@@ -32,7 +29,6 @@ class TestReconciliationQueries(unittest.TestCase):
             main.main()
             self.assertEqual(e, 0)
 
-    @mock_athena
     @patch("kafka_reconciliation.main.upload_file_to_s3_and_wait_for_consistency")
     @patch("utility.athena.poll_athena_query_status")
     @patch("boto3.client")
@@ -58,7 +54,6 @@ class TestReconciliationQueries(unittest.TestCase):
         for [_, query] in generated_queries:
             self.assertIn(args.manifest_counts_table_name, query)
 
-    @mock_athena
     @patch("utility.athena.poll_athena_query_status")
     @patch("utility.athena.get_client")
     def test_run_queries(self, mock_boto_client, mock_poll_athena):
@@ -81,7 +76,6 @@ class TestReconciliationQueries(unittest.TestCase):
         main.TEST_RUN_NAME = "upload_tests"
         main.S3_TIMEOUT = 5
 
-        mock_athena.return_value = "mock_s3_path"
         results_string = "test results"
         results_json = {"test": "test"}
 
