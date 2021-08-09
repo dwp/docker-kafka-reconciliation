@@ -58,7 +58,6 @@ class TestReconciliationQueries(unittest.TestCase):
     @patch("utility.athena.poll_athena_query_status")
     @patch("kafka_reconciliation.main.get_client")
     def test_run_queries(self, mock_boto_client, mock_poll_athena):
-        athena.ATHENA_CLIENT = None
         client_mock = mock.MagicMock()
         client_mock.start_query_execution.return_value = {"QueryExecutionId": "testId"}
         mock_boto_client.return_value = client_mock
@@ -107,11 +106,27 @@ class TestReconciliationQueries(unittest.TestCase):
         with self.assertRaises(SystemExit):
             main.command_line_args()
 
+    def test_execute_athena_query(self):
+        query_results = {"results": ["one", "two"]}
+        client_mock = mock.MagicMock()
+        client_mock.start_query_execution.return_value = {"QueryExecutionId": "testId"}
+        client_mock.get_query_results.return_value = query_results
+        client_mock.get_query_execution.return_value = {
+            "QueryExecution": {
+                "Status": {
+                    "State": "SUCCEEDED"
+
+                }
+            }
+        }
+
+        result = athena.execute_athena_query("s3_location", {"query"}, client_mock)
+        self.assertEqual(result, query_results)
+
     def setUp(self):
         path = Path(os.getcwd())
         query_path = f"{path.parent.absolute()}/docker-kafka-reconciliation/queries"
         main.MANIFEST_QUERIES_LOCAL = query_path
-        athena.ATHENA_CLIENT = None
 
     @staticmethod
     def get_testing_args():
