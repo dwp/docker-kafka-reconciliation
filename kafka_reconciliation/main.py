@@ -3,6 +3,7 @@ import json
 import os
 
 from utility import results, athena, console_printer
+from utility.aws import get_client
 from utility.s3 import upload_file_to_s3_and_wait_for_consistency
 
 query_types = ["additional", "main", "specific"]
@@ -14,19 +15,22 @@ TEMP_FOLDER = "/results"
 
 def main():
     print(f"Executing kafka reconciliation")
-    args = command_line_args()
+
     failed_queries = []
     try:
+        args = command_line_args()
+        athena_client = get_client(service_name="athena", region=args.region)
+        s3_client = get_client(service_name="s3")
         for query_type in query_types:
             print(f"Starting reconciliation for query type {query_type}")
             queries = generate_comparison_queries(args, query_type)
-            successful_queries, failures = run_queries(queries, query_type, args)
+            successful_queries, failures = run_queries(queries, query_type, args, athena_client)
             failed_queries.extend(failures)
             results_string, results_json = results.generate_formatted_results(
-                successful_queries, TEST_RUN_NAME
+                successful_queries, args.test_run_name
             )
 
-            upload_query_results(results_string, results_json, args)
+            upload_query_results(results_string, results_json, args, s3_client)
 
         if len(failed_queries) > 0:
             print(
@@ -133,7 +137,7 @@ def generate_comparison_queries(args, query_type):
     return manifest_queries
 
 
-def run_queries(manifest_queries, query_type, args):
+def run_queries(manifest_queries, query_type, args, athena_client):
     print(f"Running queries for query type {query_type}")
     print(f"Manifest queries {manifest_queries}")
     manifest_query_results = []
@@ -157,6 +161,7 @@ def run_queries(manifest_queries, query_type, args):
                             args.region,
                             s3_location,
                             manifest_query[1],
+                            athena_client
                         )
                         print(f"Query result {query_result}")
 
@@ -182,7 +187,7 @@ def run_queries(manifest_queries, query_type, args):
     return manifest_query_results, failed_queries
 
 
-def upload_query_results(results_string, results_json, args):
+def upload_query_results(results_string, results_json, args, s3_client):
     print("Generating test result")
     print(f"\n\n\n\n\n{results_string}\n\n\n\n\n")
 
@@ -203,10 +208,11 @@ def upload_query_results(results_string, results_json, args):
         args.manifest_s3_bucket,
         S3_TIMEOUT,
         s3_uploaded_location_txt,
+        s3_client=s3_client
     )
 
     print(
-        f"Uploaded text results file to S3 bucket with name of '{args.manifest_s3_bucket}' at location '{s3_uploaded_location_txt}'"
+        f"Uploaded text results file to S3 bucket with name of '{args.manifest_s3_bucket}' / at location '{s3_uploaded_location_txt}'"
     )
 
     os.remove(results_file)
@@ -226,6 +232,7 @@ def upload_query_results(results_string, results_json, args):
         args.manifest_s3_bucket,
         S3_TIMEOUT,
         s3_uploaded_location_json,
+        s3_client=s3_client
     )
 
     print(

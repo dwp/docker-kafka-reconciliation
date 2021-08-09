@@ -1,9 +1,7 @@
 import time
 
-from utility.aws import get_client
 
-
-def execute_athena_query(region, output_location, query):
+def execute_athena_query(region, output_location, query, athena_client):
     """Executes the given individual query against athena and return the result.
 
     Keyword arguments:
@@ -14,14 +12,13 @@ def execute_athena_query(region, output_location, query):
         f"Executing query and sending output results to '{output_location}'"
     )
 
-    athena_client = get_client(service_name="athena", region=region)
     print("Received client starting queries")
     query_start_resp = athena_client.start_query_execution(
         QueryString=query, ResultConfiguration={"OutputLocation": output_location}
     )
     print(f"Query start response {query_start_resp}")
     if 'QueryExecutionId' in query_start_resp:
-        execution_state = poll_athena_query_status(query_start_resp["QueryExecutionId"], athena_client)
+        execution_state = poll_athena_query_status(query_start_resp["QueryExecutionId"])
 
         if execution_state != "SUCCEEDED":
             print(f"Non successful execution state returned: {execution_state}")
