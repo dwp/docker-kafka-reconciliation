@@ -7,6 +7,7 @@ from unittest import mock
 from unittest.mock import patch, call
 
 from kafka_reconciliation import main
+from kafka_reconciliation.utility import athena
 
 
 class TestReconciliationQueries(unittest.TestCase):
@@ -55,8 +56,9 @@ class TestReconciliationQueries(unittest.TestCase):
             self.assertIn(args.manifest_counts_table_name, query)
 
     @patch("utility.athena.poll_athena_query_status")
-    @patch("utility.athena.get_client")
+    @patch("kafka_reconciliation.main.get_client")
     def test_run_queries(self, mock_boto_client, mock_poll_athena):
+        athena.ATHENA_CLIENT = None
         client_mock = mock.MagicMock()
         client_mock.start_query_execution.return_value = {"QueryExecutionId": "testId"}
         mock_boto_client.return_value = client_mock
@@ -64,8 +66,9 @@ class TestReconciliationQueries(unittest.TestCase):
                                         "FAILED", "FAILED"]
         args = self.get_testing_args()
         main_queries = main.generate_comparison_queries(args, "main")
-        manifest_query_results, failed_queries = main.run_queries(main_queries, "main", args)
-        mock_boto_client.assert_called_with(service_name="athena", region="eu-west-2")
+
+        manifest_query_results, failed_queries = main.run_queries(main_queries, "main", args, client_mock)
+
         self.assertEqual(len(manifest_query_results), 4)
         self.assertEqual(len(failed_queries), 4)
 
@@ -78,21 +81,23 @@ class TestReconciliationQueries(unittest.TestCase):
 
         results_string = "test results"
         results_json = {"test": "test"}
-
-        main.upload_query_results(results_string, results_json, self.get_testing_args())
+        s3_client = mock.MagicMock()
+        main.upload_query_results(results_string, results_json, self.get_testing_args(), s3_client)
         self.assertEqual(mock_upload.call_count, 2)
         calls = [
             call(
                 f'{results_path}/test_name_results.txt',
                 'test_manifest_bucket',
                 5,
-                'test/output/results/test_name_results.txt'
+                'test/output/results/test_name_results.txt',
+                s3_client=s3_client
             ),
             call(
                 f'{results_path}/test_name_results.json',
                 'test_manifest_bucket',
                 5,
-                'test/output/results/test_name_results.json'
+                'test/output/results/test_name_results.json',
+                s3_client=s3_client
             )
         ]
 
@@ -106,6 +111,7 @@ class TestReconciliationQueries(unittest.TestCase):
         path = Path(os.getcwd())
         query_path = f"{path.parent.absolute()}/docker-kafka-reconciliation/queries"
         main.MANIFEST_QUERIES_LOCAL = query_path
+        athena.ATHENA_CLIENT = None
 
     @staticmethod
     def get_testing_args():
