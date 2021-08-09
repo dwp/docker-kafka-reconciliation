@@ -158,7 +158,6 @@ def run_queries(manifest_queries, query_type, args, athena_client):
                     )
                     try:
                         query_result = athena.execute_athena_query(
-                            args.region,
                             s3_location,
                             manifest_query[1],
                             athena_client
