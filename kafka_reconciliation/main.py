@@ -16,7 +16,9 @@ TEMP_FOLDER = "/results"
 def main():
     print(f"Executing kafka reconciliation")
 
+    successful_queries = []
     failed_queries = []
+
     try:
         args = command_line_args()
         athena_client = get_client(service_name="athena", region=args.region)
@@ -24,13 +26,9 @@ def main():
         for query_type in query_types:
             print(f"Starting reconciliation for query type {query_type}")
             queries = generate_comparison_queries(args, query_type)
-            successful_queries, failures = run_queries(queries, query_type, args, athena_client)
+            successes, failures = run_queries(queries, query_type, args, athena_client)
+            successful_queries.extend(successes)
             failed_queries.extend(failures)
-            results_string, results_json = results.generate_formatted_results(
-                successful_queries, args.test_run_name
-            )
-
-            upload_query_results(results_string, results_json, args, s3_client)
 
         if len(failed_queries) > 0:
             print(
@@ -39,9 +37,13 @@ def main():
             )
             exit(1)
 
-        else:
-            print(f"All queries executed successfully")
-            exit(0)
+        results_string, results_json = results.generate_formatted_results(
+            successful_queries, args.test_run_name
+        )
+        upload_query_results(results_string, results_json, args, s3_client)
+
+        print(f"All queries executed successfully")
+        exit(0)
     except Exception as ex:
         print(f"Exception in main {ex}")
         exit(1)
