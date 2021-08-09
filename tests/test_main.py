@@ -74,7 +74,6 @@ class TestReconciliationQueries(unittest.TestCase):
         path = Path(os.getcwd())
         results_path = f"{path.parent.absolute()}/docker-kafka-reconciliation/tests"
         main.TEMP_FOLDER = results_path
-        main.TEST_RUN_NAME = "upload_tests"
         main.S3_TIMEOUT = 5
 
         results_string = "test results"
@@ -84,16 +83,16 @@ class TestReconciliationQueries(unittest.TestCase):
         self.assertEqual(mock_upload.call_count, 2)
         calls = [
             call(
-                f'{results_path}/upload_tests_results.txt',
+                f'{results_path}/test_name_results.txt',
                 'test_manifest_bucket',
                 5,
-                'test/output/results/upload_tests_results.txt'
+                'test/output/results/test_name_results.txt'
             ),
             call(
-                f'{results_path}/upload_tests_results.json',
+                f'{results_path}/test_name_results.json',
                 'test_manifest_bucket',
                 5,
-                'test/output/results/upload_tests_results.json'
+                'test/output/results/test_name_results.json'
             )
         ]
 
@@ -120,6 +119,7 @@ class TestReconciliationQueries(unittest.TestCase):
             manifest_report_count_of_ids='test_manifest_report_count',
             manifest_s3_bucket='test_manifest_bucket',
             manifest_s3_prefix='test/output',
+            test_run_name='test_name',
             region='eu-west-2'
 
         )
