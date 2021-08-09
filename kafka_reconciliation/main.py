@@ -186,7 +186,7 @@ def upload_query_results(results_string, results_json, args):
     print("Generating test result")
     print(f"\n\n\n\n\n{results_string}\n\n\n\n\n")
 
-    results_file_name = f"{TEST_RUN_NAME}_results.txt"
+    results_file_name = f"{args.test_run_name}_results.txt"
     results_file = os.path.join(TEMP_FOLDER, results_file_name)
 
     s3_output_prefix = os.path.join(
@@ -213,7 +213,7 @@ def upload_query_results(results_string, results_json, args):
 
     print("Generating json result")
 
-    json_file_name = f"{TEST_RUN_NAME}_results.json"
+    json_file_name = f"{args.test_run_name}_results.json"
     json_file = os.path.join(TEMP_FOLDER, json_file_name)
     with open(json_file, "w") as open_json_file:
         json.dump(results_json, open_json_file, indent=4)
