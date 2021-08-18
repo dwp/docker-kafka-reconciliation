@@ -6,7 +6,7 @@ from utility import results, athena, console_printer
 from utility.aws import get_client
 from utility.s3 import upload_file_to_s3_and_wait_for_consistency
 
-query_types = ["additional", "main", "specific"]
+query_types = ["additional", "main"]
 MANIFEST_QUERIES_LOCAL = "/queries"
 S3_TIMEOUT = 30
 TEST_RUN_NAME = "dataworks_kafka_reconciliation"
